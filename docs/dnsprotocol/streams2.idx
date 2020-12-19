@@ -1,0 +1,8 @@
+readInt16E	dnsprotocol/streams2.html#readInt16E,StringStream	streams2: readInt16E(ss: StringStream): int16	
+readInt32E	dnsprotocol/streams2.html#readInt32E,StringStream	streams2: readInt32E(ss: StringStream): int32	
+readInt64E	dnsprotocol/streams2.html#readInt64E,StringStream	streams2: readInt64E(ss: StringStream): int64	
+readUInt16E	dnsprotocol/streams2.html#readUInt16E,StringStream	streams2: readUInt16E(ss: StringStream): uint16	
+readUInt32E	dnsprotocol/streams2.html#readUInt32E,StringStream	streams2: readUInt32E(ss: StringStream): uint32	
+readUInt64E	dnsprotocol/streams2.html#readUInt64E,StringStream	streams2: readUInt64E(ss: StringStream): uint64	
+writeSomeIntBE	dnsprotocol/streams2.html#writeSomeIntBE,StringStream,SomeEndianInt	streams2: writeSomeIntBE(ss: StringStream; x: SomeEndianInt)	
+writeSomeIntBE	dnsprotocol/streams2.html#writeSomeIntBE,StringStream,T	streams2: writeSomeIntBE[T: SomeSignedInt | uint](ss: StringStream; x: T)	

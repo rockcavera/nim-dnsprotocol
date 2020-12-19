@@ -1,3 +1,79 @@
+## Domain Name System (DNS) protocol for Nim programming language
+##
+## The current implementation was based on RFCs
+## [1034](https://tools.ietf.org/html/rfc1035) and
+## [1035](https://tools.ietf.org/html/rfc1035). There is still much to be
+## done...
+##
+## This package does not transport data, that is, it is neither a DNS client nor
+## a DNS server, but it can be used to implement them. If you need a client dns
+## use [ndns](https://github.com/rockcavera/nim-ndns).
+## 
+## Current Support
+## ===============
+## Most types of the IN class are currently supported. However, if I need to add
+## a type, I would be happy to receive a PR and a little less with an issue.
+##
+## For dns types, classes, rcodes, etc. that are supported, access
+## [here](dnsprotocol/types.html). Unsupported types are stored in
+## `RDataUnknown`, thus avoiding runtime errors.
+## 
+## Basic Use
+## =========
+## Creating a Message object with a type A query for the domain name
+## nim-lang.org:
+## ```nim
+## import dnsprotocol
+##
+## let header = initHeader(id = 12345'u16, rd = true)
+##
+## let question = initQuestion("nim-lang.org", QType.A, QClass.IN)
+##   # If the last character of "nim-lang.org" is not a '.', the initializer will
+##   # add, as it is called the DNS root.
+##
+## let msg = initMessage(header, @[question])
+##   # The initializer automatically changes `header.qdcount` to `1'u16`
+##
+## echo msg
+##
+## let bmsg = toBinMsg(msg)
+##
+## echo "\n", bmsg
+## ```
+##
+## Creating a Message object with the query response from the previous example:
+## ```nim
+## import dnsprotocol
+##
+## let header = initHeader(id = 12345'u16, qr = QR.Response, rd = true, ra = true)
+##
+## let question = initQuestion("nim-lang.org.", QType.A, QClass.IN)
+##
+## let rr1 = initResourceRecord("nim-lang.org", Type.A, Class.IN, 299'i32, 4'u16,
+##                              RDataA(address: [172'u8, 67, 132, 242]))
+##   # If the last character of "nim-lang.org" is not a '.', the initializer will
+##   # add, as it is called the DNS root.
+##
+## let rr2 = initResourceRecord("nim-lang.org.", Type.A, Class.IN, 299'i32, 4'u16,
+##                              RDataA(address: [104'u8, 28, 19, 79]))
+##   # The `rdlength` parameter does not need a value, as the `toBinMsg()` does not
+##   # use it. The `toBinMsg()` takes the binary size of `rdata` and writes it to
+##   # the binary DNS message.
+##
+## let rr3 = initResourceRecord("nim-lang.org.", Type.A, Class.IN, 299'i32, 4'u16,
+##                              RDataA(address: [104'u8, 28, 18, 79]))
+##
+## let msg = initMessage(header, @[question], @[rr1, rr2, rr3])
+##   # The initializer automatically changes: `header.qdcount` to `1'u16` and
+##   # `header.ancount` to `3'u16`.
+##
+## echo repr(msg) # repr() to show RDatas (RDataA)
+##
+## let bmsg = toBinMsg(msg)
+##
+## echo "\n", bmsg
+## ```
+
 # Std imports
 import std/[streams, tables]
 
@@ -25,7 +101,8 @@ proc initHeader*(id: uint16 = 0'u16, qr: QR = QR.Query,
   ## - `qr` specifies whether this message is a query (`QR.Query`) or a response
   ##   (`QR.Response`).
   ## - `opcode` specifies kind of query. This value is set by the originator of
-  ##   a query and copied into the response. See `OpCode<types.html#OpCode>`_.
+  ##   a query and copied into the response. See
+  ##   `OpCode<dnsprotocol/types.html#OpCode>`_.
   ## - `aa` is a parameter valid in responses, and if it is `true`, specifies
   ##   that the responding name server is an authority for the domain name in
   ##   question section.
@@ -36,7 +113,7 @@ proc initHeader*(id: uint16 = 0'u16, qr: QR = QR.Query,
   ## - `ra` is set in a response. If it is `true`, denotes whether recursive
   ##   query support is available in the name server.
   ## - `rcode` is a parameter set as part of responses. See
-  ##   `RCode<types.html#RCode>`_.
+  ##   `RCode<dnsprotocol/types.html#RCode>`_.
   ## - `qdcount` specifies the number of entries in the question section.
   ## - `ancount` specifies the number of resource records in the answer section.
   ## - `nscount` specifies the number of name server resource records in the
@@ -66,9 +143,10 @@ proc initQuestion*(qname: string, qtype: QType, qclass: QClass = QClass.IN):
   ## 
   ## **Parameters**
   ## - `qname` is a domain name. It can be an empty string `""`
-  ## - `qtype` specifies the type of the query. See `QType<types.html#QType>`_.
+  ## - `qtype` specifies the type of the query. See
+  ##   `QType<dnsprotocol/types.html#QType>`_.
   ## - `qclass` specifies the class of the query. See
-  ##   `QClass<types.html#QClass>`_.
+  ##   `QClass<dnsprotocol/types.html#QClass>`_.
   result.qname = qname
 
   if 0 == len(result.qname) or '.' != result.qname[^1]:
@@ -89,15 +167,15 @@ proc initResourceRecord*(name: string, `type`: Type, class: Class, ttl: int32,
   ## - `name` is an owner name, i.e., the name of the node to which this
   ##   resource record pertains.
   ## - `type` specifies the type of the resource record. See
-  ##   `Type<types.html#Type>`_.
+  ##   `Type<dnsprotocol/types.html#Type>`_.
   ## - `class` specifies the class of the resource record. See
-  ##   `Class<types.html#Class>`_.
+  ##   `Class<dnsprotocol/types.html#Class>`_.
   ## - `ttl` specifies the time interval that the resource record may be cached
   ##   before the source of the information should again be consulted.
   ## - `rdlength` specifies the length of the `rdata`.
   ## - `rdata` describes the resource. The format of this information varies
   ##   according to the `Type` and `Class` of the resource record. See
-  ##   `RDatas<types.html#RDatas>`_.
+  ##   `RDatas<dnsprotocol/types.html#RDatas>`_.
   ## 
   ## **Note**
   ## * `rdata` can be initialized as `nil`, but it is not recommended.
@@ -162,8 +240,7 @@ proc toBinMsg*(header: Header, ss: StringStream) =
   ## Turns a `Header` object into a binary DNS protocol message stored in `ss`.
   ## 
   ## The use of this procedure is advised for optimization purposes when you
-  ## know what to do. Otherwise, use `toBinMsg<#toBinMsg,Header,Questions,Answers,Authorities,Additionals>`_
-  ## or `toBinMsg<#toBinMsg,Message>`_
+  ## know what to do. Otherwise, use `toBinMsg<#toBinMsg,Message,bool>`_
   writeSomeIntBE(ss, header.id)
 
   var a = uint8(header.flags.qr) shl 7
@@ -196,8 +273,7 @@ proc toBinMsg*(question: Question, ss: StringStream,
   ## `ss`.
   ## 
   ## The use of this procedure is advised for optimization purposes when you
-  ## know what to do. Otherwise, use `toBinMsg<#toBinMsg,Header,Questions,Answers,Authorities,Additionals>`_
-  ## or `toBinMsg<#toBinMsg,Message>`_
+  ## know what to do. Otherwise, use `toBinMsg<#toBinMsg,Message,bool>`_
   domainNameToBinMsg(question.qname, ss, dictionary)
   writeSomeIntBE(ss, uint16(question.qtype))
   writeSomeIntBE(ss, uint16(question.qclass))
@@ -208,7 +284,7 @@ proc toBinMsg*(rr: ResourceRecord, ss: StringStream,
   ## in `ss`.
   ## 
   ## The use of this procedure is advised for optimization purposes when you
-  ## know what to do. Otherwise, use `toBinMsg<#toBinMsg,Message>`_
+  ## know what to do. Otherwise, use `toBinMsg<#toBinMsg,Message,bool>`_
   domainNameToBinMsg(rr.name, ss, dictionary)
   writeSomeIntBE(ss, uint16(rr.`type`))
   writeSomeIntBE(ss, uint16(rr.class))
@@ -318,7 +394,7 @@ proc parseResourceRecord(rr: var ResourceRecord, ss: StringStream) =
   parseRData(rr.rdata, rr, ss)
 
 proc parseMessage*(bmsg: BinMsg): Message =
-  ## Parses a binary DNS protocol message contained in `bmsg``.
+  ## Parses a binary DNS protocol message contained in `bmsg`.
   var ss = newStringStream(bmsg)
 
   parseHeader(result.header, ss)

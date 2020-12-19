@@ -1,13 +1,12 @@
-# dnsprotocol
 Domain Name System (DNS) protocol for Nim programming language
 
 The current implementation was based on RFCs [1034](https://tools.ietf.org/html/rfc1035) and [1035](https://tools.ietf.org/html/rfc1035). There is still much to be done...
 
-This package does not transport data, that is, it is neither a DNS client nor a DNS server, but it can be used to implement them. If you need a client dns use [ndns](link).
+This package does not transport data, that is, it is neither a DNS client nor a DNS server, but it can be used to implement them. If you need a client dns use [ndns](https://github.com/rockcavera/nim-ndns).
 # Current Support
 Most types of the IN class are currently supported. However, if I need to add a type, I would be happy to receive a PR and a little less with an issue.
 
-For dns types, classes, rcodes, etc. that are supported, access [here](link). Unsupported types are stored in `RDataUnknown`, thus avoiding runtime errors.
+For dns types, classes, rcodes, etc. that are supported, access [here](https://rockcavera.github.io/nim-dnsprotocol/dnsprotocol/types.html). Unsupported types are stored in `RDataUnknown`, thus avoiding runtime errors.
 # Install
 `nimble install dnsprotocol`
 or

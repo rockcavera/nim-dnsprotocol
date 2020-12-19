@@ -1,0 +1,6 @@
+addressToBinMsg	dnsprotocol/utils.html#addressToBinMsg,openArray[uint8],StringStream	utils: addressToBinMsg(x: openArray[uint8]; ss: StringStream)	
+characterStringToBinMsg	dnsprotocol/utils.html#characterStringToBinMsg,string,StringStream	utils: characterStringToBinMsg(cs: string; ss: StringStream)	
+domainNameToBinMsg	dnsprotocol/utils.html#domainNameToBinMsg,string,StringStream,Table[string,uint16]	utils: domainNameToBinMsg(name: string; ss: StringStream;\n                   dictionary: var Table[string, uint16])	
+parseCharacterString	dnsprotocol/utils.html#parseCharacterString,string,StringStream	utils: parseCharacterString(cs: var string; ss: StringStream)	
+parseCharacterStrings	dnsprotocol/utils.html#parseCharacterStrings,seq[string],StringStream,int	utils: parseCharacterStrings(css: var seq[string]; ss: StringStream; rdlength: int)	
+parseDomainName	dnsprotocol/utils.html#parseDomainName,string,StringStream	utils: parseDomainName(name: var string; ss: StringStream)	

@@ -1,0 +1,11 @@
+Current Support	dnsprotocol.html#current-support	 Current Support	
+Basic Use	dnsprotocol.html#basic-use	 Basic Use	
+initHeader	dnsprotocol.html#initHeader,uint16,QR,OpCode,bool,bool,bool,bool,RCode,uint16,uint16,uint16,uint16	dnsprotocol: initHeader(id: uint16 = 0&apos;u16; qr: QR = QR.Query; opcode: OpCode = OpCode.Query;\n           aa: bool = false; tc: bool = false; rd: bool = false;\n           ra: bool = false; rcode: RCode = RCode.NoError;\n           qdcount: uint16 = 0&apos;u16; ancount: uint16 = 0&apos;u16;\n           nscount: uint16 = 0&apos;u16; arcount: uint16 = 0&apos;u16): Header	
+initQuestion	dnsprotocol.html#initQuestion,string,QType,QClass	dnsprotocol: initQuestion(qname: string; qtype: QType; qclass: QClass = QClass.IN): Question	
+initResourceRecord	dnsprotocol.html#initResourceRecord,string,Type,Class,int32,uint16,RDatas	dnsprotocol: initResourceRecord(name: string; type: Type; class: Class; ttl: int32;\n                   rdlength: uint16; rdata: RDatas): ResourceRecord	
+initMessage	dnsprotocol.html#initMessage,Header,Questions,Answers,Authorities,Additionals	dnsprotocol: initMessage(header: Header; questions: Questions = @[]; answers: Answers = @[];\n            authorities: Authorities = @[]; additionals: Additionals = @[]): Message	
+toBinMsg	dnsprotocol.html#toBinMsg,Header,StringStream	dnsprotocol: toBinMsg(header: Header; ss: StringStream)	
+toBinMsg	dnsprotocol.html#toBinMsg,Question,StringStream,Table[string,uint16]	dnsprotocol: toBinMsg(question: Question; ss: StringStream;\n         dictionary: var Table[string, uint16])	
+toBinMsg	dnsprotocol.html#toBinMsg,ResourceRecord,StringStream,Table[string,uint16]	dnsprotocol: toBinMsg(rr: ResourceRecord; ss: StringStream;\n         dictionary: var Table[string, uint16])	
+toBinMsg	dnsprotocol.html#toBinMsg,Message,bool	dnsprotocol: toBinMsg(msg: Message; isTcp: bool = false): BinMsg	
+parseMessage	dnsprotocol.html#parseMessage,BinMsg	dnsprotocol: parseMessage(bmsg: BinMsg): Message	
