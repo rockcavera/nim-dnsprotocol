@@ -10,4 +10,4 @@ srcDir        = "src"
 
 # Dependencies
 
-requires "nim >= 1.2.0", "stew"
+requires "nim >= 1.4.0", "stew"
