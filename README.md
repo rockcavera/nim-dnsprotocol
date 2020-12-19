@@ -9,7 +9,9 @@ Most types of the IN class are currently supported. However, if I need to add a 
 For dns types, classes, rcodes, etc. that are supported, access [here](https://rockcavera.github.io/nim-dnsprotocol/dnsprotocol/types.html). Unsupported types are stored in `RDataUnknown`, thus avoiding runtime errors.
 # Install
 `nimble install dnsprotocol`
+
 or
+
 `nimble install https://github.com/rockcavera/nim-dnsprotocol.git`
 # Basic Use
 Creating a Message object with a type A query for the domain name nim-lang.org:
@@ -64,6 +66,8 @@ let bmsg = toBinMsg(msg)
 
 echo "\n", bmsg
 ```
+# Documentation
+https://rockcavera.github.io/nim-dnsprotocol/theindex.html
 # Project Layout
 The project currently has 6 Nim code files.
 
