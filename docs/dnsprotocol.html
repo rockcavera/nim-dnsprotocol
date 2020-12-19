@@ -176,7 +176,7 @@ class="link-seesrc" target="_blank">Source</a>
 <h1><a class="toc-backref" id="current-support" href="#current-support">Current Support</a></h1><p>Most types of the IN class are currently supported. However, if I need to add a type, I would be happy to receive a PR and a little less with an issue.</p>
 <p>For dns types, classes, rcodes, etc. that are supported, access <a class="reference external" href="dnsprotocol/types.html">here</a>. Unsupported types are stored in <tt class="docutils literal"><span class="pre">RDataUnknown</span></tt>, thus avoiding runtime errors.</p>
 
-<h1><a class="toc-backref" id="basic-use" href="#basic-use">Basic Use</a></h1><p>Creating a Message object with a type A query for the domain name nim-lang.org:</p>
+<h1><a class="toc-backref" id="basic-use" href="#basic-use">Basic Use</a></h1><p>Creating a <tt class="docutils literal"><span class="pre">Message</span></tt> object with a <tt class="docutils literal"><span class="pre">QType.A</span></tt> query for the domain name nim-lang.org:</p>
 <p><pre class="listing"><span class="Keyword">import</span> <span class="Identifier">dnsprotocol</span>
 
 <span class="Keyword">let</span> <span class="Identifier">header</span> <span class="Operator">=</span> <span class="Identifier">initHeader</span><span class="Punctuation">(</span><span class="Identifier">id</span> <span class="Operator">=</span> <span class="DecNumber">12345'</span><span class="Identifier">u16</span><span class="Punctuation">,</span> <span class="Identifier">rd</span> <span class="Operator">=</span> <span class="Identifier">true</span><span class="Punctuation">)</span>
@@ -194,7 +194,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 <span class="Identifier">echo</span> <span class="StringLit">&quot;</span><span class="EscapeSequence">\n</span><span class="StringLit">&quot;</span><span class="Punctuation">,</span> <span class="Identifier">bmsg</span>
 </pre></p>
-<p>Creating a Message object with the query response from the previous example:</p>
+<p>Creating a <tt class="docutils literal"><span class="pre">Message</span></tt> object with the query response from the previous example:</p>
 <p><pre class="listing"><span class="Keyword">import</span> <span class="Identifier">dnsprotocol</span>
 
 <span class="Keyword">let</span> <span class="Identifier">header</span> <span class="Operator">=</span> <span class="Identifier">initHeader</span><span class="Punctuation">(</span><span class="Identifier">id</span> <span class="Operator">=</span> <span class="DecNumber">12345'</span><span class="Identifier">u16</span><span class="Punctuation">,</span> <span class="Identifier">qr</span> <span class="Operator">=</span> <span class="Identifier">QR</span><span class="Operator">.</span><span class="Identifier">Response</span><span class="Punctuation">,</span> <span class="Identifier">rd</span> <span class="Operator">=</span> <span class="Identifier">true</span><span class="Punctuation">,</span> <span class="Identifier">ra</span> <span class="Operator">=</span> <span class="Identifier">true</span><span class="Punctuation">)</span>
@@ -418,7 +418,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2020-12-19 00:39:22 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2020-12-19 01:59:44 UTC</small>
       </div>
     </div>
   </div>

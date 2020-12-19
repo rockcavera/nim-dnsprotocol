@@ -20,7 +20,7 @@
 ## 
 ## Basic Use
 ## =========
-## Creating a Message object with a type A query for the domain name
+## Creating a `Message` object with a `QType.A` query for the domain name
 ## nim-lang.org:
 ## ```nim
 ## import dnsprotocol
@@ -41,7 +41,7 @@
 ## echo "\n", bmsg
 ## ```
 ##
-## Creating a Message object with the query response from the previous example:
+## Creating a `Message` object with the query response from the previous example:
 ## ```nim
 ## import dnsprotocol
 ##

@@ -14,7 +14,7 @@ or
 
 `nimble install https://github.com/rockcavera/nim-dnsprotocol.git`
 # Basic Use
-Creating a Message object with a type A query for the domain name nim-lang.org:
+Creating a `Message` object with a `QType.A` query for the domain name nim-lang.org:
 ```nim
 import dnsprotocol
 
@@ -34,7 +34,7 @@ let bmsg = toBinMsg(msg)
 echo "\n", bmsg
 ```
 
-Creating a Message object with the query response from the previous example:
+Creating a `Message` object with the query response from the previous example:
 ```nim
 import dnsprotocol
 
