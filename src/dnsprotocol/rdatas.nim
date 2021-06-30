@@ -26,6 +26,7 @@ proc newRData*(rr: var ResourceRecord) =
     of Type.TXT: rr.rdata = new(RDataTXT)
     of Type.AAAA: rr.rdata = new(RDataAAAA)
     of Type.CAA: rr.rdata = new(RDataCAA)
+    of Type.SRV: rr.rdata = new(RDataSRV)
     else:
       #raise newException(ValueError, "`newRData()` for Type " & $rr.`type` & " has not yet been implemented")
       rr.rdata = new(RDataUnknown) # Prevents execution errors when certain Type are not implemented
@@ -140,6 +141,12 @@ method parseRData*(rdata: RDataCAA, rr: ResourceRecord, ss: StringStream) =
   
   if readData(ss, cstring(rdata.value), l) != l:
     raise newException(IOError, "Cannot read from StringStream")
+
+method parseRData*(rdata: RDataSRV, rr: ResourceRecord, ss: StringStream) =
+  rdata.priority = readUInt16E(ss)
+  rdata.weight = readUInt16E(ss)
+  rdata.port = readUInt16E(ss)
+  parseDomainName(rdata.target, ss)
 
 method rdataToBinMsg*(rdata: RData, rr: ResourceRecord, ss: StringStream,
                       dictionary: var Table[string, uint16]) {.base.} =

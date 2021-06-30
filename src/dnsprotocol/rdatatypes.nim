@@ -94,6 +94,12 @@ type
 
   # END - RDatas specified in RFC-8659
 
+  RDataSRV* = ref object of RData
+    priority*: uint16 ## The priority of this target host.  A client MUST attempt to contact the target host with the lowest-numbered priority it can reach; target hosts with the same priority SHOULD be tried in an order defined by the weight field.  The range is 0-65535.  This is a 16 bit unsigned integer in network byte order.
+    weight*: uint16 ## A server selection mechanism.  The weight field specifies a relative weight for entries with the same priority. Larger weights SHOULD be given a proportionately higher probability of being selected. The range of this number is 0-65535.  This is a 16 bit unsigned integer in network byte order.
+    port*: uint16 ## The port on this target host of this service.  The range is 0- 65535.  This is a 16 bit unsigned integer in network byte order.
+    target*: string ## A <domain-name> which specifies a host willing to act as a mail exchange for the owner name.
+
   # All RDatas
   RDatas* = RDataA|RDataNS|RDataMD|RDataMF|RDataCNAME|RDataSOA|RDataMB|RDataMG|
             RDataMR|RDataNULL|RDataWKS|RDataPTR|RDataHINFO|RDataMINFO|RDataMX|
