@@ -274,3 +274,12 @@ method rdataToBinMsg*(rdata: RDataCAA, rr: ResourceRecord, ss: StringStream,
   writeSomeIntBE(ss, rdata.tagLength)
   write(ss, rdata.tag)
   write(ss, rdata.value)
+
+method rdataToBinMsg*(rdata: RDataSRV, rr: ResourceRecord, ss: StringStream,
+                      dictionary: var Table[string, uint16]) =
+  assert(rr.`type` == Type.SRV, "Record Data incompatible with type. Use `RDataSRV` for `Type.SRV`")
+
+  writeSomeIntBE(ss, rdata.priority)
+  writeSomeIntBE(ss, rdata.weight)
+  writeSomeIntBE(ss, rdata.port)
+  domainNameToBinMsg(rdata.target, ss, dictionary)

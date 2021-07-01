@@ -103,4 +103,4 @@ type
   # All RDatas
   RDatas* = RDataA|RDataNS|RDataMD|RDataMF|RDataCNAME|RDataSOA|RDataMB|RDataMG|
             RDataMR|RDataNULL|RDataWKS|RDataPTR|RDataHINFO|RDataMINFO|RDataMX|
-            RDataTXT|RDataAAAA|RDataCAA
+            RDataTXT|RDataAAAA|RDataCAA|RDataSRV
