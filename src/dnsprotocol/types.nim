@@ -31,6 +31,7 @@ type
     MX = 15 ## Mail exchange
     TXT = 16 ## Text strings
     AAAA = 28 ## Host IPv6 address - RFC-1886
+    SRV = 33 ## Location of services - RFC-2782
     CAA = 257 ## Certification Authority Authorization - RFC-8659
   
   QType* {.pure, size: 2.} = enum ## Appear in the question part of a query.
@@ -51,6 +52,7 @@ type
     MX = 15 ## Mail exchange
     TXT = 16 ## Text strings
     AAAA = 28 ## Host IPv6 address - RFC-1886
+    SRV = 33 ## Location of services - RFC-2782
     IXFR = 251 ## Incremental zone transfer - RFC-1995
     AXFR = 252 ## A request for a transfer of an entire zone
     MAILB = 253 ## A request for mailbox-related records (MB, MG or MR)

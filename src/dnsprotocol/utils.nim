@@ -64,7 +64,7 @@ proc domainNameToBinMsg*(name: string, ss: StringStream,
 
       if '.' == c:
         raise newException(ValueError, "Invalid domain name (empty label '.' is reserved for the root)")
-      elif c notin alphanum:
+      elif c notin alphanum and c != '_':
         raise newException(ValueError, "Invalid domain name (label must start with a letter or digit)")
 
       writeData(ss, addr c, 1) # add a length
