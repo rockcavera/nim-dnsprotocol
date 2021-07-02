@@ -31,7 +31,8 @@ proc newRData*(rr: var ResourceRecord) =
       #raise newException(ValueError, "`newRData()` for Type " & $rr.`type` & " has not yet been implemented")
       rr.rdata = new(RDataUnknown) # Prevents execution errors when certain Type are not implemented
   else:
-    raise newException(ValueError, "`newRData()` for Class " & $rr.class & " has not yet been implemented")
+    #raise newException(ValueError, "`newRData()` for Class " & $rr.class & " has not yet been implemented")
+    rr.rdata = new(RDataUnknown) # Prevents execution errors when certain Class are not implemented
 
 method parseRData*(rdata: RData, rr: ResourceRecord, ss: StringStream) {.base.} =
   raise newException(ValueError, "`parseRData()` for Type " & $rr.`type` & " has not yet been implemented")

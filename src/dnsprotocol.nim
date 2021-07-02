@@ -385,7 +385,7 @@ proc parseResourceRecord(rr: var ResourceRecord, ss: StringStream) =
   parseDomainName(rr.name, ss)
 
   rr.`type` = cast[Type](readInt16E(ss)) # Prevents execution errors when certain Type are not implemented
-  rr.class = Class(readInt16E(ss))
+  rr.class = cast[Class](readInt16E(ss)) # Prevents execution errors when certain Class are not implemented or when the RR is used differently from the ideal, as in Type 41 (OPT)
   rr.ttl = readInt32E(ss)
   rr.rdlength = readUInt16E(ss)
   
