@@ -54,7 +54,7 @@ proc domainNameToBinMsg*(name: string, ss: StringStream,
       if hasKey(dictionary, remainder):
         let offset = toBytesBE(static(uint16(bMsgCompress) shl 8) or dictionary[remainder])
 
-        writeData(ss, unsafeAddr(offset), 1)
+        writeData(ss, unsafeAddr(offset), 2)
 
         break
 

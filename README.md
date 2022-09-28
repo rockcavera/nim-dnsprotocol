@@ -1,6 +1,6 @@
 Domain Name System (DNS) protocol for Nim programming language
 
-The current implementation was based on RFCs [1034](https://tools.ietf.org/html/rfc1035) and [1035](https://tools.ietf.org/html/rfc1035). There is still much to be done...
+The current implementation was based on RFCs [1034](https://tools.ietf.org/html/rfc1034) and [1035](https://tools.ietf.org/html/rfc1035). There is still much to be done...
 
 This package does not transport data, that is, it is neither a DNS client nor a DNS server, but it can be used to implement them. If you need a client dns use [ndns](https://github.com/rockcavera/nim-ndns).
 # Current Support

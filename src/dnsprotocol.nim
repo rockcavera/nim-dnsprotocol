@@ -1,7 +1,7 @@
 ## Domain Name System (DNS) protocol for Nim programming language
 ##
 ## The current implementation was based on RFCs
-## [1034](https://tools.ietf.org/html/rfc1035) and
+## [1034](https://tools.ietf.org/html/rfc1034) and
 ## [1035](https://tools.ietf.org/html/rfc1035). There is still much to be
 ## done...
 ##
