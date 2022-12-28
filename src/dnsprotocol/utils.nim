@@ -47,7 +47,7 @@ proc domainNameToBinMsg*(name: string, ss: StringStream,
       c: char
       labelLen = 0'u8
       lastChar: char
-    
+
     while true:
       let remainder = name[i..^1]
 
@@ -93,19 +93,19 @@ proc domainNameToBinMsg*(name: string, ss: StringStream,
 
         inc(i)
         inc(labelLen)
-      
+
       if lastChar notin alphanum:
         raise newException(ValueError, "Invalid domain name (label must end with a letter or digit)")
 
       if lenOffset <= bOffset:
         dictionary[remainder] = lenOffset.uint16
-      
+
       let lastOffset = getPosition(ss)
 
       setPosition(ss, lenOffset)
 
       writeData(ss, addr labelLen, 1)
-      
+
       setPosition(ss, lastOffset)
 
       if i == len(name):
@@ -135,7 +135,7 @@ proc parseCharacterStrings*(css: var seq[string], ss: StringStream,
 
   while sizeRead < rdlength:
     setLen(css, len(css) + 1)
-    
+
     parseCharacterString(css[i], ss)
 
     inc(sizeRead, len(css[i]) + 1)
@@ -149,18 +149,18 @@ proc parseDomainName*(name: var string, ss: StringStream) =
   var
     mainOffset = -1
     lenName = 0
-    
+
   while true:
     let length = readUint8(ss)
 
     if (length and bMsgCompress) == bMsgCompress:
       let offset = ((uint16(length) shl 8) or uint16(readUint8(ss))) and static(uint16(bOffset))
-      
+
       if -1 == mainOffset:
         mainOffset = getPosition(ss)
-      
+
       setPosition(ss, offset.int)
-      
+
       continue
     elif 0'u8 == length:
       break
@@ -180,8 +180,8 @@ proc parseDomainName*(name: var string, ss: StringStream) =
       name[lenName] = '.'
 
       inc(lenName)
-  
+
   if -1 != mainOffset:
     setPosition(ss, mainOffset)
-  
+
   setLen(name, lenName)

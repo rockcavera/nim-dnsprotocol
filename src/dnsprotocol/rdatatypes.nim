@@ -10,10 +10,10 @@ type
   # RDatas specified in RFC-1035 (https://tools.ietf.org/html/rfc1035)
   RDataA* = ref object of RData
     address*: array[4, uint8] ## A 32 bit Internet address.
-  
+
   RDataNS* = ref object of RData
     nsdname*: string ## A <domain-name> which specifies a host which should be authoritative for the specified class and domain.
-  
+
   RDataMD* = ref object of RData
     madname*: string ## A <domain-name> which specifies a host which has a mail agent for the domain which should be able to deliver mail for the domain.
 
@@ -22,7 +22,7 @@ type
 
   RDataCNAME* = ref object of RData
     cname*: string ## A <domain-name> which specifies the canonical or primary name for the owner.  The owner name is an alias.
-  
+
   RDataSOA* = ref object of RData
     mname*: string ## The <domain-name> of the name server that was the original or primary source of data for this zone.
     rname*: string ## A <domain-name> which specifies the mailbox of the person responsible for this zone.
@@ -34,13 +34,13 @@ type
 
   RDataMB* = ref object of RData
     madname*: string # A <domain-name> which specifies a host which has the specified mailbox.
-  
+
   RDataMG* = ref object of RData
     mgmname*: string ## A <domain-name> which specifies a mailbox which is a member of the mail group specified by the domain name.
-  
+
   RDataMR* = ref object of RData
     newname*: string ## A <domain-name> which specifies a mailbox which is the proper rename of the specified mailbox.
-  
+
   RDataNULL* = ref object of RData
     anything*: string ## Anything at all may be in the RDATA field so long as it is 65535 octets or less.
 
@@ -51,7 +51,7 @@ type
 
   RDataPTR* = ref object of RData
     ptrdname*: string ## A <domain-name> which points to some location in the domain name space.
-  
+
   RDataHINFO* = ref object of RData
     cpu*: string ## A <character-string> which specifies the CPU type.
     os*: string ## A <character-string> which specifies the operating system type.
@@ -59,14 +59,14 @@ type
   RDataMINFO* = ref object of RData
     rmailbx*: string ## A <domain-name> which specifies a mailbox which is responsible for the mailing list or mailbox.  If this domain name names the root, the owner of the MINFO RR is responsible for itself.  Note that many existing mailing lists use a mailbox X-request for the RMAILBX field of mailing list X, e.g., Msgroup-request for Msgroup.  This field provides a more general mechanism.
     emailbx*: string ## A <domain-name> which specifies a mailbox which is to receive error messages related to the mailing list or mailbox specified by the owner of the MINFO RR (similar to the ERRORS-TO: field which has been proposed).  If this domain name names the root, errors should be returned to the sender of the message.
-  
+
   RDataMX* = ref object of RData
     preference*: uint16 ## A 16 bit integer which specifies the preference given to this RR among others at the same owner.  Lower values are preferred.
     exchange*: string ## A <domain-name> which specifies a host willing to act as a mail exchange for the owner name.
 
   RDataTXT* = ref object of RData
     txtdata*: seq[string] ## One or more <character-string>s
-  
+
   # END - RDatas specified in RFC-1035
 
   # RDatas specified in RFC-1886 (https://tools.ietf.org/html/rfc1886)

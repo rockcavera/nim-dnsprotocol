@@ -8,7 +8,7 @@
 ## This package does not transport data, that is, it is neither a DNS client nor
 ## a DNS server, but it can be used to implement them. If you need a client dns
 ## use [ndns](https://github.com/rockcavera/nim-ndns).
-## 
+##
 ## Current Support
 ## ===============
 ## Most types of the IN class are currently supported. However, if I need to add
@@ -17,7 +17,7 @@
 ## For dns types, classes, rcodes, etc. that are supported, access
 ## [here](dnsprotocol/types.html). Unsupported types are stored in
 ## `RDataUnknown`, thus avoiding runtime errors.
-## 
+##
 ## Basic Use
 ## =========
 ## Creating a `Message` object with a `QType.A` query for the domain name
@@ -89,11 +89,11 @@ proc initHeader*(id: uint16 = 0'u16, qr: QR = QR.Query,
                  ancount: uint16 = 0'u16, nscount: uint16 = 0'u16,
                  arcount: uint16 = 0'u16): Header =
   ## Returns a created `Header` object.
-  ## 
+  ##
   ## The header includes fields that specify which of the remaining sections are
   ## present, and also specify whether the message is a query or a response, a
   ## standard query or some other opcode, etc.
-  ## 
+  ##
   ## **Parameters**
   ## - `id` is an identifier assigned to any kind of query. This identifier is
   ##   copied the corresponding reply and can be used to match up replies to
@@ -138,9 +138,9 @@ proc initHeader*(id: uint16 = 0'u16, qr: QR = QR.Query,
 proc initQuestion*(qname: string, qtype: QType, qclass: QClass = QClass.IN):
                    Question =
   ## Returns a created `Question` object.
-  ## 
+  ##
   ## The question contains fields that describe a question to a name server.
-  ## 
+  ##
   ## **Parameters**
   ## - `qname` is a domain name. It can be an empty string `""`
   ## - `qtype` specifies the type of the query. See
@@ -158,11 +158,11 @@ proc initQuestion*(qname: string, qtype: QType, qclass: QClass = QClass.IN):
 proc initResourceRecord*(name: string, `type`: Type, class: Class, ttl: int32,
                          rdlength: uint16, rdata: RDatas): ResourceRecord =
   ## Returns a created `ResourceRecord` object.
-  ## 
+  ##
   ## The answer, authority, and additional sections all share the same format: a
   ## variable number of resource records, where the number of records is
   ## specified in the corresponding count field in the header.
-  ## 
+  ##
   ## **Parameters**
   ## - `name` is an owner name, i.e., the name of the node to which this
   ##   resource record pertains.
@@ -176,7 +176,7 @@ proc initResourceRecord*(name: string, `type`: Type, class: Class, ttl: int32,
   ## - `rdata` describes the resource. The format of this information varies
   ##   according to the `Type` and `Class` of the resource record. See
   ##   `RDatas<dnsprotocol/types.html#RDatas>`_.
-  ## 
+  ##
   ## **Note**
   ## * `rdata` can be initialized as `nil`, but it is not recommended.
   result.name = name
@@ -194,11 +194,11 @@ proc initMessage*(header: Header, questions: Questions = @[],
                   answers: Answers = @[], authorities: Authorities = @[],
                   additionals: Additionals = @[]): Message =
   ## Returns a created `Message` object.
-  ## 
+  ##
   ## All communications inside of the DNS protocol are carried in a single
   ## format called a message. The top level format of message is divided into 5
   ## sections (some of which are empty in certain cases) shown below:
-  ## 
+  ##
   ## **Parameters**
   ## - `header` includes fields that specify which of the remaining sections are
   ##   present, and also specify whether the message is a query or a response, a
@@ -218,12 +218,12 @@ proc initMessage*(header: Header, questions: Questions = @[],
 
   if len(result.questions) > 65535:
     raise newException(ValueError, "The number of questions exceeds 65535")
-  
+
   result.header.qdcount = len(result.questions).uint16
 
   if len(result.questions) > 65535:
     raise newException(ValueError, "The number of answers exceeds 65535")
-  
+
   result.header.ancount = len(result.answers).uint16
 
   if len(result.questions) > 65535:
@@ -238,7 +238,7 @@ proc initMessage*(header: Header, questions: Questions = @[],
 
 proc toBinMsg*(header: Header, ss: StringStream) =
   ## Turns a `Header` object into a binary DNS protocol message stored in `ss`.
-  ## 
+  ##
   ## The use of this procedure is advised for optimization purposes when you
   ## know what to do. Otherwise, use `toBinMsg<#toBinMsg,Message,bool>`_
   writeSomeIntBE(ss, header.id)
@@ -258,7 +258,7 @@ proc toBinMsg*(header: Header, ss: StringStream) =
   a = a or uint8(header.flags.rcode)
 
   writeData(ss, addr a, 1)
-  
+
   # https://github.com/nim-lang/Nim/issues/16313
   # writeData(ss, unsafeAddr(header.flags), 2)
 
@@ -271,7 +271,7 @@ proc toBinMsg*(question: Question, ss: StringStream,
                dictionary: var Table[string, uint16]) =
   ## Turns a `Question` object into a binary DNS protocol message stored in
   ## `ss`.
-  ## 
+  ##
   ## The use of this procedure is advised for optimization purposes when you
   ## know what to do. Otherwise, use `toBinMsg<#toBinMsg,Message,bool>`_
   domainNameToBinMsg(question.qname, ss, dictionary)
@@ -282,7 +282,7 @@ proc toBinMsg*(rr: ResourceRecord, ss: StringStream,
                dictionary: var Table[string, uint16]) =
   ## Turns a `ResourceRecord` object into a binary DNS protocol message stored
   ## in `ss`.
-  ## 
+  ##
   ## The use of this procedure is advised for optimization purposes when you
   ## know what to do. Otherwise, use `toBinMsg<#toBinMsg,Message,bool>`_
   domainNameToBinMsg(rr.name, ss, dictionary)
@@ -325,16 +325,16 @@ proc toBinMsg*(msg: Message, isTcp: bool = false): BinMsg =
 
   for question in msg.questions:
     toBinMsg(question, ss, dictionary)
-  
+
   for answer in msg.answers:
     toBinMsg(answer, ss, dictionary)
-    
+
   for authorith in msg.authorities:
     toBinMsg(authorith, ss, dictionary)
-  
+
   for additional in msg.additionals:
     toBinMsg(additional, ss, dictionary)
-  
+
   setLen(ss.data, getPosition(ss))
 
   if isTcp:
@@ -363,7 +363,7 @@ proc parseHeader(header: var Header, ss: StringStream) =
   header.flags.ra = bool((a and 0b10000000'u8) shr 7)
   header.flags.z = (a and 0b01110000'u8) shr 4
   header.flags.rcode = RCode(a and 0b00001111'u8)
-  
+
   # https://github.com/nim-lang/Nim/issues/16313
   # if readData(ss, addr header.flags, 2) != 2:
   #   raise newException(IOError, "Cannot read from StringStream")
@@ -388,7 +388,7 @@ proc parseResourceRecord(rr: var ResourceRecord, ss: StringStream) =
   rr.class = cast[Class](readInt16E(ss)) # Prevents execution errors when certain Class are not implemented or when the RR is used differently from the ideal, as in Type 41 (OPT)
   rr.ttl = readInt32E(ss)
   rr.rdlength = readUInt16E(ss)
-  
+
   newRData(rr)
 
   parseRData(rr.rdata, rr, ss)
@@ -403,19 +403,19 @@ proc parseMessage*(bmsg: BinMsg): Message =
 
   for i in 0'u16 ..< result.header.qdcount:
     parseQuestion(result.questions[i], ss)
-  
+
   setLen(result.answers, result.header.ancount)
-  
+
   for i in 0'u16  ..< result.header.ancount:
     parseResourceRecord(result.answers[i], ss)
-  
+
   setLen(result.authorities, result.header.nscount)
-  
+
   for i in 0'u16  ..< result.header.nscount:
     parseResourceRecord(result.authorities[i], ss)
-  
+
   setLen(result.additionals, result.header.arcount)
-  
+
   for i in 0'u16  ..< result.header.arcount:
     parseResourceRecord(result.additionals[i], ss)
 

@@ -33,7 +33,7 @@ type
     AAAA = 28 ## Host IPv6 address - RFC-1886
     SRV = 33 ## Location of services - RFC-2782
     CAA = 257 ## Certification Authority Authorization - RFC-8659
-  
+
   QType* {.pure, size: 2.} = enum ## Appear in the question part of a query.
     A = 1 ## A host address
     NS = 2 ## An authoritative name server
@@ -59,7 +59,7 @@ type
     MAILA = 254 ## A request for mail agent RRs (Obsolete - see MX)
     ANY = 255 ## A request for all records
     CAA = 257 ## Certification Authority Restriction - RFC-8659
-  
+
   Class* {.pure, size: 2.} = enum ## Appear in resource records.
     IN = 1 ## The Internet
     CS = 2 ## The CSNET class (Obsolete - used only for examples in some obsolete RFCs)
@@ -77,14 +77,14 @@ type
   QR* {.pure.} = enum ## A one bit field that specifies whether this message is a query (0), or a response (1).
     Query = 0 ## Message is a query
     Response = 1 ## Message is a response
-  
+
   OpCode* {.pure.} = enum ## A four bit field that specifies kind of query in this message. This value is set by the originator of a query and copied into the response. The values are:
     Query = 0 ## A standard query
     IQuery = 1 ## An inverse query (Obsolete - RFC-3425)
     Status = 2 ## A server status request
     #Notify = 4 ## Notify - RFC-1996
     #Update = 5 ## Update - RFC-2136
-  
+
   RCode* {.pure.} = enum ## Response code - this 4 bit field is set as part of responses. The values have the following interpretation:
     NoError = 0 ## No error condition
     FormatError = 1 ## The name server was unable to interpret the query.
@@ -97,7 +97,7 @@ type
     #NXRRSET = 8 ## RFC-2136
     #NOTAUTH = 9 ## RFC-2136
     #NOTZONE = 10 ## RFC-2136
-  
+
   Flags* = object
       qr*: QR ## A one bit field that specifies whether this message is a query (0), or a response (1).
       opcode*: OpCode ## A four bit field that specifies kind of query in this message. This value is set by the originator of a query and copied into the response.
@@ -137,16 +137,16 @@ type
     ancount*: uint16 ## An unsigned 16 bit integer specifying the number of resource records in the answer section.
     nscount*: uint16 ## An unsigned 16 bit integer specifying the number of name server resource records in the authority records section.
     arcount*: uint16 ## An unsigned 16 bit integer specifying the number of resource records in the additional records section.
-  
+
   Question* = object ## The question contains fields that describe a question to a name server.
     qname*: string ## A domain name represented as a sequence of labels, where each label consists of a length octet followed by that number of octets. The domain name terminates with the zero length octet for the null label of the root. Note that this field may be an odd number of octets; no padding is used.
     qtype*: QType ## A two octet code which specifies the type of the query. The values for this field include all codes valid for a TYPE field, together with some more general codes which can match more than one type of RR.
     qclass*: QClass ## A two octet code that specifies the class of the query. For example, the QCLASS field is IN for the Internet.
-  
+
   Questions* = seq[Question] ## It is an alias for `seq[Question]`
 
   RData* = ref object of RootObj ## A variable length string of octets that describes the resource. The format of this information varies according to the TYPE and CLASS of the resource record.
-  
+
   ResourceRecord* = object ## The answer, authority, and additional sections all share the same format: a variable number of resource records, where the number of records is specified in the corresponding count field in the header.
     name*: string ## An owner name, i.e., the name of the node to which this resource record pertains.
     `type`*: Type ## Two octets containing one of the RR TYPE codes.
@@ -154,7 +154,7 @@ type
     ttl*: int32 ## A 32 bit signed integer that specifies the time interval that the resource record may be cached before the source of the information should again be consulted. Zero values are interpreted to mean that the RR can only be used for the transaction in progress, and should not be cached. For example, SOA records are always distributed with a zero TTL to prohibit caching. Zero values can also be used for extremely volatile data.
     rdlength*: uint16 ## An unsigned 16 bit integer that specifies the length in octets of the RDATA field.
     rdata*: RData ## A variable length string of octets that describes the resource. The format of this information varies according to the TYPE and CLASS of the resource record.
-  
+
   Answers* = seq[ResourceRecord] ## It is an alias for `seq[ResourceRecord]`
   Authorities* = seq[ResourceRecord] ## It is an alias for `seq[ResourceRecord]`
   Additionals* = seq[ResourceRecord] ## It is an alias for `seq[ResourceRecord]`

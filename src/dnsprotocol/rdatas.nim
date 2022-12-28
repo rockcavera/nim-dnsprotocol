@@ -139,7 +139,7 @@ method parseRData*(rdata: RDataCAA, rr: ResourceRecord, ss: StringStream) =
   l = int(rr.rdlength) - (l + 2)
 
   setLen(rdata.value, l)
-  
+
   if readData(ss, cstring(rdata.value), l) != l:
     raise newException(IOError, "Cannot read from StringStream")
 
@@ -162,31 +162,31 @@ method rdataToBinMsg*(rdata: RDataA, rr: ResourceRecord, ss: StringStream,
 method rdataToBinMsg*(rdata: RDataNS, rr: ResourceRecord, ss: StringStream,
                       dictionary: var Table[string, uint16]) =
   assert(rr.`type` == Type.NS, "Record Data incompatible with type. Use `RDataNS` for `Type.NS`")
-    
+
   domainNameToBinMsg(rdata.nsdname, ss, dictionary)
 
 method rdataToBinMsg*(rdata: RDataMD, rr: ResourceRecord, ss: StringStream,
                       dictionary: var Table[string, uint16]) =
   assert(rr.`type` == Type.MD, "Record Data incompatible with type. Use `RDataMD` for `Type.MD`")
-    
+
   domainNameToBinMsg(rdata.madname, ss, dictionary)
 
 method rdataToBinMsg*(rdata: RDataMF, rr: ResourceRecord, ss: StringStream,
                       dictionary: var Table[string, uint16]) =
   assert(rr.`type` == Type.MF, "Record Data incompatible with type. Use `RDataMF` for `Type.MF`")
-    
+
   domainNameToBinMsg(rdata.madname, ss, dictionary)
 
 method rdataToBinMsg*(rdata: RDataCNAME, rr: ResourceRecord, ss: StringStream,
                       dictionary: var Table[string, uint16]) =
   assert(rr.`type` == Type.CNAME, "Record Data incompatible with type. Use `RDataCNAME` for `Type.CNAME`")
-    
+
   domainNameToBinMsg(rdata.cname, ss, dictionary)
 
 method rdataToBinMsg*(rdata: RDataSOA, rr: ResourceRecord, ss: StringStream,
                       dictionary: var Table[string, uint16]) =
   assert(rr.`type` == Type.SOA, "Record Data incompatible with type. Use `RDataSOA` for `Type.SOA`")
-    
+
   domainNameToBinMsg(rdata.mname, ss, dictionary)
   domainNameToBinMsg(rdata.rname, ss, dictionary)
   writeSomeIntBE(ss, rdata.serial)
@@ -198,31 +198,31 @@ method rdataToBinMsg*(rdata: RDataSOA, rr: ResourceRecord, ss: StringStream,
 method rdataToBinMsg*(rdata: RDataMB, rr: ResourceRecord, ss: StringStream,
                       dictionary: var Table[string, uint16]) =
   assert(rr.`type` == Type.MB, "Record Data incompatible with type. Use `RDataMB` for `Type.MB`")
-    
+
   domainNameToBinMsg(rdata.madname, ss, dictionary)
 
 method rdataToBinMsg*(rdata: RDataMG, rr: ResourceRecord, ss: StringStream,
                       dictionary: var Table[string, uint16]) =
   assert(rr.`type` == Type.MG, "Record Data incompatible with type. Use `RDataMG` for `Type.MG`")
-    
+
   domainNameToBinMsg(rdata.mgmname, ss, dictionary)
 
 method rdataToBinMsg*(rdata: RDataMR, rr: ResourceRecord, ss: StringStream,
                       dictionary: var Table[string, uint16]) =
   assert(rr.`type` == Type.MR, "Record Data incompatible with type. Use `RDataMR` for `Type.MR`")
-    
+
   domainNameToBinMsg(rdata.newname, ss, dictionary)
 
 method rdataToBinMsg*(rdata: RDataNULL, rr: ResourceRecord, ss: StringStream,
                       dictionary: var Table[string, uint16]) =
   assert(rr.`type` == Type.NULL, "Record Data incompatible with type. Use `RDataNULL` for `Type.NULL`")
-    
+
   write(ss, rdata.anything)
 
 method rdataToBinMsg*(rdata: RDataWKS, rr: ResourceRecord, ss: StringStream,
                       dictionary: var Table[string, uint16]) =
   assert(rr.`type` == Type.WKS, "Record Data incompatible with type. Use `RDataWKS` for `Type.WKS`")
-    
+
   addressToBinMsg(rdata.address, ss)
   writeSomeIntBE(ss, rdata.protocol)
   write(ss, rdata.bitmap)
@@ -230,7 +230,7 @@ method rdataToBinMsg*(rdata: RDataWKS, rr: ResourceRecord, ss: StringStream,
 method rdataToBinMsg*(rdata: RDataPTR, rr: ResourceRecord, ss: StringStream,
                       dictionary: var Table[string, uint16]) =
   assert(rr.`type` == Type.PTR, "Record Data incompatible with type. Use `RDataPTR` for `Type.PTR`")
-    
+
   domainNameToBinMsg(rdata.ptrdname, ss, dictionary)
 
 method rdataToBinMsg*(rdata: RDataHINFO, rr: ResourceRecord, ss: StringStream,
@@ -243,21 +243,21 @@ method rdataToBinMsg*(rdata: RDataHINFO, rr: ResourceRecord, ss: StringStream,
 method rdataToBinMsg*(rdata: RDataMINFO, rr: ResourceRecord, ss: StringStream,
                       dictionary: var Table[string, uint16]) =
   assert(rr.`type` == Type.MINFO, "Record Data incompatible with type. Use `RDataMINFO` for `Type.MINFO`")
-    
+
   domainNameToBinMsg(rdata.rmailbx, ss, dictionary)
   domainNameToBinMsg(rdata.emailbx, ss, dictionary)
 
 method rdataToBinMsg*(rdata: RDataMX, rr: ResourceRecord, ss: StringStream,
                       dictionary: var Table[string, uint16]) =
   assert(rr.`type` == Type.MX, "Record Data incompatible with type. Use `RDataMX` for `Type.MX`")
-    
+
   writeSomeIntBE(ss, rdata.preference)
   domainNameToBinMsg(rdata.exchange, ss, dictionary)
 
 method rdataToBinMsg*(rdata: RDataTXT, rr: ResourceRecord, ss: StringStream,
                       dictionary: var Table[string, uint16]) =
   assert(rr.`type` == Type.TXT, "Record Data incompatible with type. Use `RDataTXT` for `Type.TXT`")
-  
+
   for cs in rdata.txtdata:
     characterStringToBinMsg(cs, ss)
 
