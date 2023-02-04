@@ -345,7 +345,7 @@ proc toBinMsg*(msg: Message, isTcp: bool = false): BinMsg =
   else:
     setLen(ss.data, bmsgLen)
 
-  result = ss.data
+  result = move ss.data
 
   close(ss)
 
