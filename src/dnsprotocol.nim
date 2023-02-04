@@ -316,9 +316,6 @@ proc toBinMsg*(msg: Message, isTcp: bool = false): BinMsg =
 
   setLen(ss.data, 512) # maximum message size by UDP protocol
 
-  if isTcp:
-    setPosition(ss, 2)
-
   toBinMsg(msg.header, ss)
 
   var dictionary = initTable[string, uint16]() # Dictionary for message compression
@@ -335,12 +332,18 @@ proc toBinMsg*(msg: Message, isTcp: bool = false): BinMsg =
   for additional in msg.additionals:
     toBinMsg(additional, ss, dictionary)
 
-  setLen(ss.data, getPosition(ss))
+  let bmsgLen = getPosition(ss)
 
   if isTcp:
+    setLen(ss.data, bmsgLen + 2)
+
+    copyMem(addr ss.data[2], addr ss.data[0], bmsgLen)
+
     setPosition(ss, 0)
 
-    writeSomeIntBE(ss, uint16(len(ss.data) - 2))
+    writeSomeIntBE(ss, uint16(bmsgLen))
+  else:
+    setLen(ss.data, bmsgLen)
 
   result = ss.data
 
