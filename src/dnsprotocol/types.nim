@@ -85,7 +85,7 @@ type
     #Notify = 4 ## Notify - RFC-1996
     #Update = 5 ## Update - RFC-2136
 
-  RCode* {.pure.} = enum ## Response code - this 4 bit field is set as part of responses. The values have the following interpretation:
+  RCode* {.pure.} = enum ## Response code - this 4 bit field is set as part of responses.
     NoError = 0 ## No error condition
     FormatError = 1 ## The name server was unable to interpret the query.
     ServerFailure = 2 ## The name server was unable to process this query due to a problem with the name server.
@@ -99,14 +99,14 @@ type
     #NOTZONE = 10 ## RFC-2136
 
   Flags* = object
-      qr*: QR ## A one bit field that specifies whether this message is a query (0), or a response (1).
-      opcode*: OpCode ## A four bit field that specifies kind of query in this message. This value is set by the originator of a query and copied into the response.
-      aa*: bool ## Authoritative Answer - this bit is valid in responses, and specifies that the responding name server is an authority for the domain name in question section. Note that the contents of the answer section may have multiple owner names because of aliases. The AA bit corresponds to the name which matches the query name, or the first owner name in the answer section.
-      tc*: bool ## TrunCation - specifies that this message was truncated due to length greater than that permitted on the transmission channel.
-      rd*: bool ## Recursion Desired - this bit may be set in a query and is copied into the response. If RD is set, it directs the name server to pursue the query recursively. Recursive query support is optional.
-      ra*: bool ## Recursion Available - this be is set or cleared in a response, and denotes whether recursive query support is available in the name server.
-      z*: uint8 ## Reserved for future use.  Must be zero in all queries and responses.
-      rcode*: RCode ## Response code - this 4 bit field is set as part of responses.
+    qr*: QR ## A one bit field that specifies whether this message is a query (0), or a response (1).
+    opcode*: OpCode ## A four bit field that specifies kind of query in this message. This value is set by the originator of a query and copied into the response.
+    aa*: bool ## Authoritative Answer - this bit is valid in responses, and specifies that the responding name server is an authority for the domain name in question section. Note that the contents of the answer section may have multiple owner names because of aliases. The AA bit corresponds to the name which matches the query name, or the first owner name in the answer section.
+    tc*: bool ## TrunCation - specifies that this message was truncated due to length greater than that permitted on the transmission channel.
+    rd*: bool ## Recursion Desired - this bit may be set in a query and is copied into the response. If RD is set, it directs the name server to pursue the query recursively. Recursive query support is optional.
+    ra*: bool ## Recursion Available - this be is set or cleared in a response, and denotes whether recursive query support is available in the name server.
+    z*: uint8 ## Reserved for future use.  Must be zero in all queries and responses.
+    rcode*: RCode ## Response code - this 4 bit field is set as part of responses.
 
   #[ https://github.com/nim-lang/Nim/issues/16313
   Flags* {.size: 2.} = object

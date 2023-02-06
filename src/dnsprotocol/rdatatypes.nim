@@ -76,9 +76,19 @@ type
 
   # END - RDatas specified in RFC-1886
 
+  # RDatas specified in RFC-2782 (https://www.rfc-editor.org/rfc/rfc2782)
+
+  RDataSRV* = ref object of RData
+    priority*: uint16 ## The priority of this target host.  A client MUST attempt to contact the target host with the lowest-numbered priority it can reach; target hosts with the same priority SHOULD be tried in an order defined by the weight field.  The range is 0-65535.  This is a 16 bit unsigned integer in network byte order.
+    weight*: uint16 ## A server selection mechanism.  The weight field specifies a relative weight for entries with the same priority. Larger weights SHOULD be given a proportionately higher probability of being selected. The range of this number is 0-65535.  This is a 16 bit unsigned integer in network byte order.
+    port*: uint16 ## The port on this target host of this service.  The range is 0- 65535.  This is a 16 bit unsigned integer in network byte order.
+    target*: string ## A <domain-name> which specifies a host willing to act as a mail exchange for the owner name.
+
+  # END - RDatas specified in RFC-2782
+
   # RDatas specified in RFC-8659 (https://tools.ietf.org/html/rfc8659)
 
-  CAAFlags* {.size: 1.} = object
+  CAAFlags* {.size: 1.} = object # /!\ I need to review! /!\ bitsize is buggy with mm refc and async
     when system.cpuEndian == bigEndian:
       issuerCritical* {.bitsize:1.}: bool ## Issuer Critical Flag:  If the value is set to "1", the Property is critical. A CA MUST NOT issue certificates for any FQDN if the Relevant RRset for that FQDN contains a CAA critical Property for an unknown or unsupported Property Tag.
       reserved* {.bitsize:7.}: uint8 ## Reserved for future use.
@@ -93,12 +103,6 @@ type
     value*: string ## A sequence of octets representing the Property Value. Property Values are encoded as binary values and MAY employ sub-formats.
 
   # END - RDatas specified in RFC-8659
-
-  RDataSRV* = ref object of RData
-    priority*: uint16 ## The priority of this target host.  A client MUST attempt to contact the target host with the lowest-numbered priority it can reach; target hosts with the same priority SHOULD be tried in an order defined by the weight field.  The range is 0-65535.  This is a 16 bit unsigned integer in network byte order.
-    weight*: uint16 ## A server selection mechanism.  The weight field specifies a relative weight for entries with the same priority. Larger weights SHOULD be given a proportionately higher probability of being selected. The range of this number is 0-65535.  This is a 16 bit unsigned integer in network byte order.
-    port*: uint16 ## The port on this target host of this service.  The range is 0- 65535.  This is a 16 bit unsigned integer in network byte order.
-    target*: string ## A <domain-name> which specifies a host willing to act as a mail exchange for the owner name.
 
   # All RDatas
   RDatas* = RDataA|RDataNS|RDataMD|RDataMF|RDataCNAME|RDataSOA|RDataMB|RDataMG|

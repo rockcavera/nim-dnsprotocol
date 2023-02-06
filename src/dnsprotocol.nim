@@ -178,7 +178,7 @@ proc initResourceRecord*(name: string, `type`: Type, class: Class, ttl: int32,
   ##   `RDatas<dnsprotocol/types.html#RDatas>`_.
   ##
   ## **Note**
-  ## * `rdata` can be initialized as `nil`, but it is not recommended.
+  ## - `rdata` can be initialized as `nil`, but it is not recommended.
   result.name = name
 
   if 0 == len(result.name) or '.' != result.name[^1]:
@@ -221,17 +221,17 @@ proc initMessage*(header: Header, questions: Questions = @[],
 
   result.header.qdcount = len(result.questions).uint16
 
-  if len(result.questions) > 65535:
+  if len(result.answers) > 65535:
     raise newException(ValueError, "The number of answers exceeds 65535")
 
   result.header.ancount = len(result.answers).uint16
 
-  if len(result.questions) > 65535:
+  if len(result.authorities) > 65535:
     raise newException(ValueError, "The number of authorities exceeds 65535")
 
   result.header.nscount = len(result.authorities).uint16
 
-  if len(result.questions) > 65535:
+  if len(result.additionals) > 65535:
     raise newException(ValueError, "The number of additionals exceeds 65535")
 
   result.header.arcount = len(result.additionals).uint16
@@ -296,11 +296,9 @@ proc toBinMsg*(rr: ResourceRecord, ss: StringStream,
 
   rdataToBinMsg(rr.rdata, rr, ss, dictionary)
 
-  let aOffset = getPosition(ss)
-
-  #rr.rdlength = uint16(aOffset - (rdlengthOffset + 2))
-
-  let rdlength = uint16(aOffset - (rdlengthOffset + 2))
+  let
+    aOffset = getPosition(ss)
+    rdlength = uint16(aOffset - (rdlengthOffset + 2))
 
   setPosition(ss, rdlengthOffset)
 
