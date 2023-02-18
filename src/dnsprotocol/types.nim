@@ -14,6 +14,7 @@
 
 type
   Type* {.pure, size: 2.} = enum ## Are used in resource records.
+    Reserved0 = 0 ## Reserved - to work the `case` in `ResourceRecord`
     A = 1 ## A host address
     NS = 2 ## An authoritative name server
     MD = 3 ## A mail destination (Obsolete - use MX)
@@ -32,6 +33,7 @@ type
     TXT = 16 ## Text strings
     AAAA = 28 ## Host IPv6 address - RFC-1886
     SRV = 33 ## Location of services - RFC-2782
+    OPT = 41 ## OPT pseudo-RR (meta-RR) - RFC-6891
     CAA = 257 ## Certification Authority Authorization - RFC-8659
 
   QType* {.pure, size: 2.} = enum ## Appear in the question part of a query.
@@ -53,6 +55,7 @@ type
     TXT = 16 ## Text strings
     AAAA = 28 ## Host IPv6 address - RFC-1886
     SRV = 33 ## Location of services - RFC-2782
+    OPT = 41 ## OPT pseudo-RR (meta-RR) - RFC-6891
     IXFR = 251 ## Incremental zone transfer - RFC-1995
     AXFR = 252 ## A request for a transfer of an entire zone
     MAILB = 253 ## A request for mailbox-related records (MB, MG or MR)
@@ -84,19 +87,21 @@ type
     Status = 2 ## A server status request
     #Notify = 4 ## Notify - RFC-1996
     #Update = 5 ## Update - RFC-2136
+    #DSO = 6 ## DNS Stateful Operations - RFC-8490
 
-  RCode* {.pure.} = enum ## Response code - this 4 bit field is set as part of responses.
+  RCode* {.pure.} = enum ## Response code - this 4 bit field is set as part of responses. RR OPT brings 8 bits as an extension of RCode [RFC-6891].
     NoError = 0 ## No error condition
     FormatError = 1 ## The name server was unable to interpret the query.
     ServerFailure = 2 ## The name server was unable to process this query due to a problem with the name server.
     NameError = 3 ## Meaningful only for responses from an authoritative name server, this code signifies that the domain name referenced in the query does not exist.
     NotImplemented = 4 ## The name server does not support the requested kind of query.
     Refused = 5 ## The name server refuses to perform the specified operation for policy reasons. For example, a name server may not wish to provide the information to the particular requester, or a name server may not wish to perform a particular operation (e.g., zone transfer) for particular data.
-    #YXDOMAIN = 6 ## RFC-2136
+    #YXDOMAIN = 6 ## RFC-2136 RFC-6672
     #YXRRSET = 7 ## RFC-2136
     #NXRRSET = 8 ## RFC-2136
-    #NOTAUTH = 9 ## RFC-2136
+    #NOTAUTH = 9 ## RFC-2136 RFC-8945
     #NOTZONE = 10 ## RFC-2136
+    BADVERSorBADSIG = 16 ## Bad OPT Version RFC-6891 or TSIG Signature Failure RFC-8945
 
   Flags* = object
     qr*: QR ## A one bit field that specifies whether this message is a query (0), or a response (1).
@@ -149,9 +154,16 @@ type
 
   ResourceRecord* = object ## The answer, authority, and additional sections all share the same format: a variable number of resource records, where the number of records is specified in the corresponding count field in the header.
     name*: string ## An owner name, i.e., the name of the node to which this resource record pertains.
-    `type`*: Type ## Two octets containing one of the RR TYPE codes.
-    class*: Class ## Two octets containing one of the RR CLASS codes.
-    ttl*: int32 ## A 32 bit signed integer that specifies the time interval that the resource record may be cached before the source of the information should again be consulted. Zero values are interpreted to mean that the RR can only be used for the transaction in progress, and should not be cached. For example, SOA records are always distributed with a zero TTL to prohibit caching. Zero values can also be used for extremely volatile data.
+    case `type`*: Type ## Two octets containing one of the RR TYPE codes.
+    of Type.OPT:
+      udpSize*: uint16 ## requestor's UDP payload size
+      extRCode*: uint8 ## EXTENDED-RCODE - Forms the upper 8 bits of extended 12-bit RCODE (together with the 4 bits defined in [RFC1035].  Note that EXTENDED-RCODE value 0 indicates that an unextended RCODE is in use (values 0 through 15).
+      version*: uint8 ## Indicates the implementation level of the setter.  Full conformance with this specification is indicated by version '0'. Requestors are encouraged to set this to the lowest implemented level capable of expressing a transaction, to minimise the responder and network load of discovering the greatest common implementation level between requestor and responder.  A requestor's version numbering strategy MAY ideally be a run-time configuration option. If a responder does not implement the VERSION level of the request, then it MUST respond with RCODE=BADVERS.  All responses MUST be limited in format to the VERSION level of the request, but the VERSION of each response SHOULD be the highest implementation level of the responder.  In this way, a requestor will learn the implementation level of a responder as a side effect of every response, including error responses and including RCODE=BADVERS.
+      `do`*: bool ## DNSSEC OK bit as defined by [RFC3225].
+      z*: uint16 ## Set to zero by senders and ignored by receivers, unless modified in a subsequent specification.
+    else:
+      class*: Class ## Two octets containing one of the RR CLASS codes.
+      ttl*: int32 ## A 32 bit signed integer that specifies the time interval that the resource record may be cached before the source of the information should again be consulted. Zero values are interpreted to mean that the RR can only be used for the transaction in progress, and should not be cached. For example, SOA records are always distributed with a zero TTL to prohibit caching. Zero values can also be used for extremely volatile data.
     rdlength*: uint16 ## An unsigned 16 bit integer that specifies the length in octets of the RDATA field.
     rdata*: RData ## A variable length string of octets that describes the resource. The format of this information varies according to the TYPE and CLASS of the resource record.
 

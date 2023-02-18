@@ -144,7 +144,11 @@ proc parseCharacterStrings*(css: var seq[string], ss: StringStream,
 proc parseDomainName*(name: var string, ss: StringStream) =
   ## Parses a Domain Name contained in `ss` binary dns protocol message and
   ## stores it in `name`.
-  setLen(name, 254) # Seria 253, no entanto há o '.' adicionado ao final que é removido quando terminado.
+  ##
+  ## **Note**
+  ## - `name` will always have its last character as a '.', which is the root of
+  ##   the domain name.
+  setLen(name, 255)
 
   var
     mainOffset = -1
@@ -163,6 +167,11 @@ proc parseDomainName*(name: var string, ss: StringStream) =
 
       continue
     elif 0'u8 == length:
+      if lenName == 0:
+        name[lenName] = '.'
+
+        lenName = 1
+
       break
     elif 63'u8 < length:
       raise newException(ValueError, "Not a legal name (label exceeds 63 octets)")

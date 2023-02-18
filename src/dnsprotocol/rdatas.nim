@@ -149,6 +149,24 @@ method parseRData*(rdata: RDataSRV, rr: ResourceRecord, ss: StringStream) =
   rdata.port = readUInt16E(ss)
   parseDomainName(rdata.target, ss)
 
+method parseRData*(rdata: RDataOPT, rr: ResourceRecord, ss: StringStream) =
+  let
+    initialPositionSS = getPosition(ss)
+    rdlength = int(rr.rdlength)
+
+  while (getPosition(ss) - initialPositionSS) < rdlength:
+    setLen(rdata.options, len(rdata.options) + 1)
+
+    rdata.options[^1].code = readUInt16E(ss)
+
+    let length = int(readUInt16E(ss))
+
+    if length > 0:
+      setLen(rdata.options[^1].data, length)
+
+      if readData(ss, cstring(rdata.options[^1].data), length) != length:
+        raise newException(IOError, "Cannot read from StringStream")
+
 method rdataToBinMsg*(rdata: RData, rr: ResourceRecord, ss: StringStream,
                       dictionary: var Table[string, uint16]) {.base.} =
   raise newException(ValueError, "`rdataToBinMsg()` for type " & $rr.`type` & " has not yet been implemented")
@@ -284,3 +302,18 @@ method rdataToBinMsg*(rdata: RDataSRV, rr: ResourceRecord, ss: StringStream,
   writeSomeIntBE(ss, rdata.weight)
   writeSomeIntBE(ss, rdata.port)
   domainNameToBinMsg(rdata.target, ss, dictionary)
+
+method rdataToBinMsg*(rdata: RDataOPT, rr: ResourceRecord, ss: StringStream,
+                      dictionary: var Table[string, uint16]) =
+  assert(rr.`type` == Type.OPT, "Record Data incompatible with type. Use `RDataOPT` for `Type.OPT`")
+
+  for o in rdata.options:
+    writeSomeIntBE(ss, o.code)
+
+    var length = len(o.data)
+
+    if length > 0xFFFF:
+      length = 0xFFFF # Truncates data to a maximum of 65535
+
+    writeSomeIntBE(ss, uint16(length))
+    writeData(ss, cstring(o.data), length)

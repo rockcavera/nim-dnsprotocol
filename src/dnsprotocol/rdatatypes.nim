@@ -86,6 +86,17 @@ type
 
   # END - RDatas specified in RFC-2782
 
+  # RDatas specified in RFC-6891 (https://www.rfc-editor.org/rfc/rfc6891)
+
+  OPTOption* = object
+    code*: uint16 ## Assigned by the Expert Review process as defined by the DNSEXT working group and the IESG.
+    data*: string ## Varies per OPTION-CODE. MUST be treated as a bit field.
+
+  RDataOPT* = ref object of RData
+    options*: seq[OPTOption] ## May contain zero or more `OPTOption`
+
+  # END - RDatas specified in RFC-6891
+
   # RDatas specified in RFC-8659 (https://tools.ietf.org/html/rfc8659)
 
   CAAFlags* {.size: 1.} = object # /!\ I need to review! /!\ bitsize is buggy with mm refc and async
@@ -107,4 +118,4 @@ type
   # All RDatas
   RDatas* = RDataA|RDataNS|RDataMD|RDataMF|RDataCNAME|RDataSOA|RDataMB|RDataMG|
             RDataMR|RDataNULL|RDataWKS|RDataPTR|RDataHINFO|RDataMINFO|RDataMX|
-            RDataTXT|RDataAAAA|RDataCAA|RDataSRV
+            RDataTXT|RDataAAAA|RDataCAA|RDataSRV|RDataOPT

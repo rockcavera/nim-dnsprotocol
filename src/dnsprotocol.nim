@@ -120,6 +120,17 @@ proc initHeader*(id: uint16 = 0'u16, qr: QR = QR.Query,
   ##   authority records section.
   ## - `arcount` specifies the number of resource records in the additional
   ##   records section.
+  ##
+  ## **Notes**
+  ## - `qdcount`, `ancount`, `nscount` and `arcount` do not need to be passed
+  ##   correctly if the `Message` object is initialized with the `initMessage()`
+  ##   procedure, which will correct these header fields according to the
+  ##   quantity of items in `questions`, `answers`, `authorities` and
+  ##   `additionals`.
+  ## - If `rcode` is an enumerator greater than 15, it will be necessary to
+  ##   create a `ResourceRecord` of type `Type.OPT`. This will be done
+  ##   automatically if a `Message` object is initialized with the
+  ##   `initMessage()` procedure.
   result.id = id
 
   result.flags.qr = qr
@@ -147,6 +158,10 @@ proc initQuestion*(qname: string, qtype: QType, qclass: QClass = QClass.IN):
   ##   `QType<dnsprotocol/types.html#QType>`_.
   ## - `qclass` specifies the class of the query. See
   ##   `QClass<dnsprotocol/types.html#QClass>`_.
+  ##
+  ## **Note**
+  ## - The last character of `qname` must always be a `'.'`. If not, it will be
+  ##   added automatically.
   result.qname = qname
 
   if 0 == len(result.qname) or '.' != result.qname[^1]:
@@ -177,8 +192,14 @@ proc initResourceRecord*(name: string, `type`: Type, class: Class, ttl: int32,
   ##   according to the `Type` and `Class` of the resource record. See
   ##   `RDatas<dnsprotocol/types.html#RDatas>`_.
   ##
-  ## **Note**
+  ## **Notes**
+  ## - The last character of `name` must always be a `'.'`. If not, it will be
+  ##   added automatically.
   ## - `rdata` can be initialized as `nil`, but it is not recommended.
+  ## - It must not be used to initialize a `ResourceRecord` of type `Type.OPT`.
+  ##   To do this, use `initOptRR()<#initOptRR%2Cuint16%2Cuint8%2Cuint8%2Cbool%2Cuint16%2CRDataOPT>`_.
+  doAssert(`type` != Type.OPT, "Use `initOptRR()` for `type` == `Type.OPT`")
+
   result.name = name
 
   if 0 == len(result.name) or '.' != result.name[^1]:
@@ -189,6 +210,46 @@ proc initResourceRecord*(name: string, `type`: Type, class: Class, ttl: int32,
   result.ttl = ttl
   result.rdlength = rdlength
   result.rdata = rdata
+
+proc initOptRR*(udpSize: uint16, extRCode: uint8, version: uint8, `do`: bool,
+                rdlength: uint16, rdata: RDataOPT): ResourceRecord =
+  ## Returns a `ResourceRecord` object of type OPT pseudo-RR (meta-RR).
+  ##
+  ## The object created is `Type.OPT` (41).
+  ##
+  ## An OPT record does not carry any DNS data. It is used only to contain
+  ## control information pertaining to the question-and-answer sequence of a
+  ## specific transaction.
+  ##
+  ## **Parameters**
+  ## - `udpSize` is UDP payload size.
+  ## - `extRCode` is the upper 8 bits that allow you to extend the RCode header
+  ##   flag beyond 15.
+  ## - `version` specifies the adopted version.
+  ## - `do` if `true` indicates that it is capable of accepting DNSSEC security
+  ##   RRs. If `false` indicates that it is not prepared to deal with DNSSEC
+  ##   security RRs.
+  ## - `rdlength` specifies the length of the `rdata`.
+  ## - `rdata` describes the resource, which can contain zero or more
+  ##   `OPTOption`. See `RDataOPT<dnsprotocol/types.html#RDataOPT>`_ for more
+  ##   details.
+  ##
+  ## **Notes**
+  ## - `rdata` can be initialized as `nil`, but it is not recommended.
+  ## - For more information about OPT RR visit `RFC-6891<https://www.rfc-editor.org/rfc/rfc6891>`_.
+  ## - `ResourceRecord.extRCode` can be changed if `Header.flags.rcode` passed
+  ##   in `initMessage()` has its enumerator with different upper 8 bits.
+  ResourceRecord(
+    name: ".",
+    `type`: Type.OPT,
+    udpSize: udpSize,
+    extRCode: extRCode,
+    version: version,
+    `do`: `do`,
+    z: 0'u16,
+    rdlength: rdlength,
+    rdata: new(RDataOPT)
+  )
 
 proc initMessage*(header: Header, questions: Questions = @[],
                   answers: Answers = @[], authorities: Authorities = @[],
@@ -210,11 +271,34 @@ proc initMessage*(header: Header, questions: Questions = @[],
   ##   authoritative name server.
   ## - `additionals` contains zero or more resource records which relate to the
   ##   query, but are not strictly answers for the question.
+  ##
+  ## **Notes**
+  ## - `Header.qdcount`, `Header.ancount`, `Header.nscount` and `Header.arcount`
+  ##   will be defined according to the number of items passed in `questions`,
+  ##   `answers`, `authorities` and `additionals`, respectively.
+  ## - If `Header.flags.rcode` is an enumerator greater than 15, the upper 8
+  ##   bits will be passed through a `ResourceRecord` of type `Type.OPT`. When
+  ##   the `ResourceRecord` of type `Type.OPT` is not passed in `additionals`,
+  ##   it will be created automatically.
   result.header = header
   result.questions = questions
   result.answers = answers
   result.authorities = authorities
   result.additionals = additionals
+
+  let extRCode = uint8(uint16(result.header.flags.rcode) shr 4) # Will I need an OPT RR?
+
+  if extRCode > 0:
+    block addOptRR:
+      for a in mitems(result.additionals):
+        if a.`type` != Type.OPT: continue
+
+        a.extRCode = extRCode
+
+        break addOptRR
+
+      add(result.additionals, initOptRR(512'u16, extRCode, 0'u8, false, 0'u16,
+                                        new(RDataOPT)))
 
   if len(result.questions) > 65535:
     raise newException(ValueError, "The number of questions exceeds 65535")
@@ -240,7 +324,7 @@ proc toBinMsg*(header: Header, ss: StringStream) =
   ## Turns a `Header` object into a binary DNS protocol message stored in `ss`.
   ##
   ## The use of this procedure is advised for optimization purposes when you
-  ## know what to do. Otherwise, use `toBinMsg<#toBinMsg,Message,bool>`_
+  ## know what to do. Otherwise, use `toBinMsg<#toBinMsg,Message,bool>`_.
   writeSomeIntBE(ss, header.id)
 
   var a = uint8(header.flags.qr) shl 7
@@ -255,7 +339,10 @@ proc toBinMsg*(header: Header, ss: StringStream) =
   a = uint8(header.flags.ra) shl 7
 
   a = a or header.flags.z shl 4
-  a = a or uint8(header.flags.rcode)
+  a = a or (uint8(header.flags.rcode) and 0b1111) # Truncates RCode in header
+                                                  # flags by 15 (4 bits). The
+                                                  # remainder must be passed
+                                                  # through OPT RR
 
   writeData(ss, addr a, 1)
 
@@ -273,7 +360,7 @@ proc toBinMsg*(question: Question, ss: StringStream,
   ## `ss`.
   ##
   ## The use of this procedure is advised for optimization purposes when you
-  ## know what to do. Otherwise, use `toBinMsg<#toBinMsg,Message,bool>`_
+  ## know what to do. Otherwise, use `toBinMsg<#toBinMsg,Message,bool>`_.
   domainNameToBinMsg(question.qname, ss, dictionary)
   writeSomeIntBE(ss, uint16(question.qtype))
   writeSomeIntBE(ss, uint16(question.qclass))
@@ -284,11 +371,23 @@ proc toBinMsg*(rr: ResourceRecord, ss: StringStream,
   ## in `ss`.
   ##
   ## The use of this procedure is advised for optimization purposes when you
-  ## know what to do. Otherwise, use `toBinMsg<#toBinMsg,Message,bool>`_
+  ## know what to do. Otherwise, use `toBinMsg<#toBinMsg,Message,bool>`_.
   domainNameToBinMsg(rr.name, ss, dictionary)
+
   writeSomeIntBE(ss, uint16(rr.`type`))
-  writeSomeIntBE(ss, uint16(rr.class))
-  writeSomeIntBE(ss, rr.ttl)
+
+  case rr.`type`
+  of Type.OPT: # Write an OPT RR
+    writeSomeIntBE(ss, rr.udpSize)
+    writeSomeIntBE(ss, rr.extRCode)
+    writeSomeIntBE(ss, rr.version)
+
+    let doAndZ = (uint16(rr.`do`) shl 15) or (rr.z and 0b0111111111111111)
+
+    writeSomeIntBE(ss, doAndZ)
+  else:
+    writeSomeIntBE(ss, uint16(rr.class))
+    writeSomeIntBE(ss, rr.ttl)
 
   let rdlengthOffset = getPosition(ss)
 
@@ -347,6 +446,7 @@ proc toBinMsg*(msg: Message, isTcp: bool = false): BinMsg =
 
   close(ss)
 
+#{.push warning[HoleEnumConv]: off.} # supported as of Nim 1.6.0
 proc parseHeader(header: var Header, ss: StringStream) =
   ## Parses a header contained in `ss` and stores into `header`.
   header.id = readUInt16E(ss)
@@ -363,7 +463,7 @@ proc parseHeader(header: var Header, ss: StringStream) =
 
   header.flags.ra = bool((a and 0b10000000'u8) shr 7)
   header.flags.z = (a and 0b01110000'u8) shr 4
-  header.flags.rcode = RCode(a and 0b00001111'u8)
+  header.flags.rcode = RCode(a and 0b00001111'u8) # ignore compiler warning
 
   # https://github.com/nim-lang/Nim/issues/16313
   # if readData(ss, addr header.flags, 2) != 2:
@@ -378,21 +478,39 @@ proc parseQuestion(question: var Question, ss: StringStream) =
   ## Parses a question contained in `ss` and stores into `question`.
   parseDomainName(question.qname, ss)
 
-  question.qtype = QType(readUInt16E(ss))
-  question.qclass = QClass(readUInt16E(ss))
+  question.qtype = QType(readUInt16E(ss)) # ignore compiler warning
+  question.qclass = QClass(readUInt16E(ss)) # ignore compiler warning
+#{.pop.}
 
 proc parseResourceRecord(rr: var ResourceRecord, ss: StringStream) =
   ## Parses a resource record contained in `ss` and stores into `rr`.
   parseDomainName(rr.name, ss)
 
-  rr.`type` = cast[Type](readInt16E(ss)) # Prevents execution errors when certain Type are not implemented
-  rr.class = cast[Class](readInt16E(ss)) # Prevents execution errors when certain Class are not implemented or when the RR is used differently from the ideal, as in Type 41 (OPT)
-  rr.ttl = readInt32E(ss)
+  let `type` = cast[Type](readInt16E(ss)) # Prevents execution errors when certain Type are not implemented
+
+  case `type`
+  of Type.OPT: # Parses an OPT RR
+    rr = ResourceRecord(name: move rr.name,
+                        `type`: `type`,
+                        udpSize: readUInt16E(ss),
+                        extRCode: readUint8(ss),
+                        version: readUint8(ss),
+                        `do`: false,
+                        z: readUInt16E(ss),
+                        rdata: new(RDataOPT))
+    rr.`do` = bool((rr.z and 0b1000000000000000) shr 15)
+    rr.z = rr.z and 0b0111111111111111
+  else:
+    rr.`type` = `type`
+    rr.class = cast[Class](readInt16E(ss)) # Prevents execution errors when certain Class are not implemented or when the RR is used differently from the ideal
+    rr.ttl = readInt32E(ss)
+
+    newRData(rr)
+
   rr.rdlength = readUInt16E(ss)
 
-  newRData(rr)
-
-  parseRData(rr.rdata, rr, ss)
+  if rr.rdlength > 0:
+    parseRData(rr.rdata, rr, ss)
 
 proc parseMessage*(bmsg: BinMsg): Message =
   ## Parses a binary DNS protocol message contained in `bmsg`.
@@ -419,5 +537,8 @@ proc parseMessage*(bmsg: BinMsg): Message =
 
   for i in 0'u16  ..< result.header.arcount:
     parseResourceRecord(result.additionals[i], ss)
+
+    if result.additionals[i].`type` == Type.OPT:
+      result.header.flags.rcode = RCode(int(result.additionals[i].extRCode shl 4) or ord(result.header.flags.rcode))
 
   close(ss)
