@@ -131,20 +131,11 @@ proc initHeader*(id: uint16 = 0'u16, qr: QR = QR.Query,
   ##   create a `ResourceRecord` of type `Type.OPT`. This will be done
   ##   automatically if a `Message` object is initialized with the
   ##   `initMessage()` procedure.
-  result.id = id
+  let flags = Flags(qr: qr, opcode: opcode, aa: aa, tc: tc, rd: rd, ra: ra,
+                    rcode: rcode)
 
-  result.flags.qr = qr
-  result.flags.opcode = opcode
-  result.flags.aa = aa
-  result.flags.tc = tc
-  result.flags.rd = rd
-  result.flags.ra = ra
-  result.flags.rcode = rcode
-
-  result.qdcount = qdcount
-  result.ancount = ancount
-  result.nscount = nscount
-  result.arcount = arcount
+  Header(id: id, flags: flags, qdcount: qdcount, ancount: ancount,
+         nscount: nscount, arcount: arcount)
 
 proc initQuestion*(qname: string, qtype: QType, qclass: QClass = QClass.IN):
                    Question =
@@ -162,13 +153,12 @@ proc initQuestion*(qname: string, qtype: QType, qclass: QClass = QClass.IN):
   ## **Note**
   ## - The last character of `qname` must always be a `'.'`. If not, it will be
   ##   added automatically.
-  result.qname = qname
+  var qname = qname
 
-  if 0 == len(result.qname) or '.' != result.qname[^1]:
-    add(result.qname, '.')
+  if 0 == len(qname) or '.' != qname[^1]:
+    add(qname, '.')
 
-  result.qtype = qtype
-  result.qclass = qclass
+  Question(qname: qname, qtype: qtype, qclass: qclass)
 
 proc initResourceRecord*(name: string, `type`: Type, class: Class, ttl: int32,
                          rdlength: uint16, rdata: RDatas): ResourceRecord =
@@ -198,18 +188,16 @@ proc initResourceRecord*(name: string, `type`: Type, class: Class, ttl: int32,
   ## - `rdata` can be initialized as `nil`, but it is not recommended.
   ## - It must not be used to initialize a `ResourceRecord` of type `Type.OPT`.
   ##   To do this, use `initOptRR()<#initOptRR%2Cuint16%2Cuint8%2Cuint8%2Cbool%2Cuint16%2CRDataOPT>`_.
-  doAssert(`type` != Type.OPT, "Use `initOptRR()` for `type` == `Type.OPT`")
+  assert(`type` != Type.OPT, "Use `initOptRR()` for `type` == `Type.OPT`")
 
-  result.name = name
+  var name = name
 
-  if 0 == len(result.name) or '.' != result.name[^1]:
-    add(result.name, '.')
+  if 0 == len(name) or '.' != name[^1]:
+    add(name, '.')
 
-  result.`type` = `type`
-  result.class = class
-  result.ttl = ttl
-  result.rdlength = rdlength
-  result.rdata = rdata
+  {.cast(uncheckedAssign).}:
+    ResourceRecord(name: name, `type`: `type`, class: class, ttl: ttl,
+                   rdlength: rdlength, rdata: rdata)
 
 proc initOptRR*(udpSize: uint16, extRCode: uint8, version: uint8, `do`: bool,
                 rdlength: uint16, rdata: RDataOPT): ResourceRecord =
@@ -239,17 +227,9 @@ proc initOptRR*(udpSize: uint16, extRCode: uint8, version: uint8, `do`: bool,
   ## - For more information about OPT RR visit `RFC-6891<https://www.rfc-editor.org/rfc/rfc6891>`_.
   ## - `ResourceRecord.extRCode` can be changed if `Header.flags.rcode` passed
   ##   in `initMessage()` has its enumerator with different upper 8 bits.
-  ResourceRecord(
-    name: ".",
-    `type`: Type.OPT,
-    udpSize: udpSize,
-    extRCode: extRCode,
-    version: version,
-    `do`: `do`,
-    z: 0'u16,
-    rdlength: rdlength,
-    rdata: new(RDataOPT)
-  )
+  ResourceRecord(name: ".", `type`: Type.OPT, udpSize: udpSize,
+                 extRCode: extRCode, version: version, `do`: `do`, z: 0'u16,
+                 rdlength: rdlength, rdata: new(RDataOPT))
 
 proc initMessage*(header: Header, questions: Questions = @[],
                   answers: Answers = @[], authorities: Authorities = @[],
@@ -280,11 +260,8 @@ proc initMessage*(header: Header, questions: Questions = @[],
   ##   bits will be passed through a `ResourceRecord` of type `Type.OPT`. When
   ##   the `ResourceRecord` of type `Type.OPT` is not passed in `additionals`,
   ##   it will be created automatically.
-  result.header = header
-  result.questions = questions
-  result.answers = answers
-  result.authorities = authorities
-  result.additionals = additionals
+  result = Message(header: header, questions: questions, answers: answers,
+                   authorities: authorities, additionals: additionals)
 
   let extRCode = uint8(uint16(result.header.flags.rcode) shr 4) # Will I need an OPT RR?
 
@@ -446,7 +423,7 @@ proc toBinMsg*(msg: Message, isTcp: bool = false): BinMsg =
 
   close(ss)
 
-#{.push warning[HoleEnumConv]: off.} # supported as of Nim 1.6.0
+{.push warning[HoleEnumConv]: off.} # supported as of Nim 1.6.0
 proc parseHeader(header: var Header, ss: StringStream) =
   ## Parses a header contained in `ss` and stores into `header`.
   header.id = readUInt16E(ss)
@@ -480,38 +457,39 @@ proc parseQuestion(question: var Question, ss: StringStream) =
 
   question.qtype = QType(readUInt16E(ss)) # ignore compiler warning
   question.qclass = QClass(readUInt16E(ss)) # ignore compiler warning
-#{.pop.}
+{.pop.}
 
-proc parseResourceRecord(rr: var ResourceRecord, ss: StringStream) =
+proc parseResourceRecord(ss: StringStream): ResourceRecord =
   ## Parses a resource record contained in `ss` and stores into `rr`.
-  parseDomainName(rr.name, ss)
+  var name: string
+
+  parseDomainName(name, ss)
 
   let `type` = cast[Type](readInt16E(ss)) # Prevents execution errors when certain Type are not implemented
 
   case `type`
   of Type.OPT: # Parses an OPT RR
-    rr = ResourceRecord(name: move rr.name,
-                        `type`: `type`,
-                        udpSize: readUInt16E(ss),
-                        extRCode: readUint8(ss),
-                        version: readUint8(ss),
-                        `do`: false,
-                        z: readUInt16E(ss),
-                        rdata: new(RDataOPT))
-    rr.`do` = bool((rr.z and 0b1000000000000000) shr 15)
-    rr.z = rr.z and 0b0111111111111111
+    result = ResourceRecord(name: move name, `type`: `type`,
+                            udpSize: readUInt16E(ss), extRCode: readUint8(ss),
+                            version: readUint8(ss), `do`: false,
+                            z: readUInt16E(ss), rdlength: readUInt16E(ss),
+                            rdata: new(RDataOPT))
+    result.`do` = bool((result.z and 0b1000000000000000) shr 15)
+    result.z = result.z and 0b0111111111111111
   else:
-    rr.`type` = `type`
-    rr.class = cast[Class](readInt16E(ss)) # Prevents execution errors when certain Class are not implemented or when the RR is used differently from the ideal
-    rr.ttl = readInt32E(ss)
+    # {.cast(uncheckedAssign).}: # there was no need here
+    # `class: cast[Class](readInt16E(ss)` is used to prevent execution errors when certain Classes are not implemented or when the RR is used in a way other than ideal
+    result = ResourceRecord(name: move name, `type`: `type`,
+                            class: cast[Class](readInt16E(ss)),
+                            ttl: readInt32E(ss), rdlength: readUInt16E(ss),
+                            rdata: nil)
 
-    newRData(rr)
+    newRData(result)
 
-  rr.rdlength = readUInt16E(ss)
+  if result.rdlength > 0:
+    parseRData(result.rdata, result, ss)
 
-  if rr.rdlength > 0:
-    parseRData(rr.rdata, rr, ss)
-
+{.push warning[HoleEnumConv]: off.}
 proc parseMessage*(bmsg: BinMsg): Message =
   ## Parses a binary DNS protocol message contained in `bmsg`.
   var ss = newStringStream(bmsg)
@@ -523,22 +501,26 @@ proc parseMessage*(bmsg: BinMsg): Message =
   for i in 0'u16 ..< result.header.qdcount:
     parseQuestion(result.questions[i], ss)
 
-  setLen(result.answers, result.header.ancount)
+  result.answers = newSeqOfCap[ResourceRecord](result.header.ancount)
 
   for i in 0'u16  ..< result.header.ancount:
-    parseResourceRecord(result.answers[i], ss)
+    add(result.answers, parseResourceRecord(ss))
 
-  setLen(result.authorities, result.header.nscount)
+  result.authorities = newSeqOfCap[ResourceRecord](result.header.nscount)
 
   for i in 0'u16  ..< result.header.nscount:
-    parseResourceRecord(result.authorities[i], ss)
+    add(result.authorities, parseResourceRecord(ss))
 
-  setLen(result.additionals, result.header.arcount)
+  result.additionals = newSeqOfCap[ResourceRecord](result.header.arcount)
 
   for i in 0'u16  ..< result.header.arcount:
-    parseResourceRecord(result.additionals[i], ss)
+    add(result.additionals, parseResourceRecord(ss))
 
     if result.additionals[i].`type` == Type.OPT:
-      result.header.flags.rcode = RCode(int(result.additionals[i].extRCode shl 4) or ord(result.header.flags.rcode))
+      let rcode = RCode(int(result.additionals[i].extRCode shl 4) or
+                        ord(result.header.flags.rcode)) # ignore compiler warning
+
+      result.header.flags.rcode = rcode
 
   close(ss)
+{.pop.}
