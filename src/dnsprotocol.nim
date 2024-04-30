@@ -200,12 +200,13 @@ proc initResourceRecord*(name: string, `type`: Type, class: Class, ttl: int32,
   ##   To do this, use `initOptRR()<#initOptRR%2Cuint16%2Cuint8%2Cuint8%2Cbool%2Cuint16%2CRDataOPT>`_.
   doAssert(`type` != Type.OPT, "Use `initOptRR()` for `type` == `Type.OPT`")
 
+  result = ResourceRecord(`type`: `type`)
+
   result.name = name
 
   if 0 == len(result.name) or '.' != result.name[^1]:
     add(result.name, '.')
 
-  result.`type` = `type`
   result.class = class
   result.ttl = ttl
   result.rdlength = rdlength
