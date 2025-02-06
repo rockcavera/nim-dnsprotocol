@@ -114,7 +114,7 @@ type
     rcode*: RCode ## Response code - this 4 bit field is set as part of responses.
 
   #[ https://github.com/nim-lang/Nim/issues/16313
-  Flags* {.size: 2.} = object
+  Flags* = object
     when system.cpuEndian == bigEndian:
       qr* {.bitsize:1.}: QR ## A one bit field that specifies whether this message is a query (0), or a response (1).
       opcode* {.bitsize:4.}: OpCode ## A four bit field that specifies kind of query in this message. This value is set by the originator of a query and copied into the response.

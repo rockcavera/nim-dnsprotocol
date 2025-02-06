@@ -99,7 +99,7 @@ type
 
   # RDatas specified in RFC-8659 (https://tools.ietf.org/html/rfc8659)
 
-  CAAFlags* {.size: 1.} = object # /!\ I need to review! /!\ bitsize is buggy with mm refc and async
+  CAAFlags* = object # /!\ I need to review! /!\ bitsize is buggy with mm refc and async
     when system.cpuEndian == bigEndian:
       issuerCritical* {.bitsize:1.}: bool ## Issuer Critical Flag:  If the value is set to "1", the Property is critical. A CA MUST NOT issue certificates for any FQDN if the Relevant RRset for that FQDN contains a CAA critical Property for an unknown or unsupported Property Tag.
       reserved* {.bitsize:7.}: uint8 ## Reserved for future use.
